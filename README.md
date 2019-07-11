@@ -1,10 +1,20 @@
 # gozoom
 
-Hop into a zoom rooms from the command line.
+Hop into zoom rooms from the command line.
+
+## Installation
+
+```bash
+brew upgrade
+brew tap s4heid/homebrew-tap https://github.com/s4heid/homebrew-tap.git
+
+brew install gozoom
+```
+
 
 ## Usage
 
-1. Create the binary in the `bin` folder of your $GOPATH:
+1. Build the binary in `$GOPATH/bin`:
     ```sh
     go install
     ```
@@ -13,8 +23,8 @@ Hop into a zoom rooms from the command line.
 **Example Config**:
 
 ```yaml
-room: https://zoom.us/j
-people:
+url: https://zoom.us/j/{{.ID}}
+rooms:
 - id: 0123456789
   name: Team Standup
   alias: daily

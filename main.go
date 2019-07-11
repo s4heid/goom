@@ -1,26 +1,27 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
 	"os/exec"
 	"os/user"
-	"path"
 	"path/filepath"
 	"runtime"
+	"text/template"
 
 	"github.com/spf13/viper"
 	"gopkg.in/urfave/cli.v1"
 )
 
 type Config struct {
-	Room   string   `yaml:"room"`
-	People []People `yaml:"people"`
+	Url   string `yaml:"url"`
+	Rooms []Room `yaml:"rooms"`
 }
 
-type People struct {
+type Room struct {
 	ID    string `yaml:"id"`
 	Name  string `yaml:"name"`
 	Alias string `yaml:"alias"`
@@ -29,6 +30,7 @@ type People struct {
 func openBrowser(url string) {
 	var err error
 
+	log.Printf("Opening %q in the browser", url)
 	switch runtime.GOOS {
 	case "linux":
 		err = exec.Command("xdg-open", url).Start()
@@ -45,13 +47,21 @@ func openBrowser(url string) {
 	}
 }
 
-func createURL(baseURL, id string) (string, error) {
-	u, err := url.Parse(baseURL)
+func createURL(baseURL string, room Room) (string, error) {
+	tmpl, err := template.New("url").Parse(baseURL)
 	if err != nil {
-		fmt.Println("malformed url: ", err.Error())
-		return "", err
+		return "", fmt.Errorf("creating template: %e", err)
 	}
-	u.Path = path.Join(u.Path, id)
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, room)
+	if err != nil {
+		return "", fmt.Errorf("executing template: %e", err)
+	}
+
+	u, err := url.Parse(buf.String())
+	if err != nil {
+		return "", fmt.Errorf("malformed url %s", err)
+	}
 
 	return u.String(), nil
 }
@@ -60,14 +70,20 @@ func main() {
 	vp := viper.New()
 	vp.SetConfigType("yaml")
 	vp.SetConfigName("config")
-	// vp.AddConfigPath("$HOME/.gozoom/")
 	usr, err := user.Current()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	vp.AddConfigPath(filepath.Join(usr.HomeDir, ".gozoom"))
+	configPath := filepath.Join(usr.HomeDir, ".gozoom")
+	vp.AddConfigPath(configPath)
+	vp.SetDefault("url", "https://zoom.us/j/{{.ID}}")
+	vp.SetDefault("room", []Room{})
 	if err := vp.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("failed to create %s", vp.ConfigFileUsed()))
+		// https://github.com/spf13/viper/issues/433
+		err := vp.WriteConfigAs(filepath.Join(configPath, "config.yml"))
+		if err != nil {
+			log.Fatalf("cannot create config file at %q: %s", configPath, err)
+		}
 	}
 
 	C := Config{}
@@ -77,20 +93,25 @@ func main() {
 	}
 
 	app := cli.NewApp()
+	app.Version = "0.0.1"
+	app.Name = "gozoom"
+	app.Usage = "A command line tool to jump into zoom meetings"
+	app.UsageText = "gozoom [OPTIONS]"
+
 	app.Action = func(c *cli.Context) error {
 		if c.NArg() != 1 {
-			panic(fmt.Errorf("invalid number of args %d", c.NArg()))
+			log.Fatalf("invalid number of args %d", c.NArg())
 		}
 
-		for _, p := range C.People {
+		for _, p := range C.Rooms {
 			if p.Alias == c.Args().Get(0) {
 
-				url, err := createURL(C.Room, p.ID)
+				url, err := createURL(C.Url, p)
 				if err != nil {
 					log.Fatal(err)
 				}
 
-				fmt.Printf("Joining zoom meeting of %q", p.Name)
+				log.Printf("Joining zoom meeting of %q\n", p.Name)
 				openBrowser(url)
 
 				break
