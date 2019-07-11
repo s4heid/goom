@@ -1,7 +1,6 @@
 # gozoom
 
-Hop into zoom rooms from the command line.
-
+Simple golang app that can be used to hop into zoom rooms from the command line.
 
 ## Usage
 
@@ -14,7 +13,7 @@ Hop into zoom rooms from the command line.
 **Example Config**:
 
 ```yaml
-url: https://zoom.us/j/{{.ID}}
+url: https://zoom.us/j/{{.id}}
 rooms:
 - id: 0123456789
   name: Team Standup
@@ -29,11 +28,10 @@ Now, you can use the `gozoom` command and the alias of the room as command line 
 jump into the zoom of the corresponding person:
 
 ```sh
-gozoom jd
+gozoom open jd
 ```
 
 
 ## License
 
 [Apache License](LICENSE)
-
