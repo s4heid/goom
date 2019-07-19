@@ -2,15 +2,6 @@
 
 Hop into zoom rooms from the command line.
 
-## Installation
-
-```bash
-brew upgrade
-brew tap s4heid/homebrew-tap https://github.com/s4heid/homebrew-tap.git
-
-brew install gozoom
-```
-
 
 ## Usage
 
