@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	. "github.com/logrusorgru/aurora"
+	au "github.com/logrusorgru/aurora"
 	. "github.com/s4heid/goom/config"
 	"github.com/spf13/cobra"
 
@@ -24,7 +24,7 @@ var (
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(Red(fmt.Sprintf("execute command failed: %v", err)))
+		fmt.Println(au.Red(fmt.Sprintf("execute command failed: %v", err)))
 		os.Exit(1)
 	}
 }
@@ -38,7 +38,7 @@ func initializeConfig() {
 	if ConfigReader.ViperConfig.ConfigFileUsed() == "" {
 		err := ConfigReader.InitConfig(configPath)
 		if err != nil {
-			fmt.Println(Red(err))
+			fmt.Println(au.Red(err))
 			os.Exit(1)
 		}
 	}

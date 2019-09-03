@@ -6,105 +6,58 @@ import (
 	"html/template"
 	"net/url"
 	"os"
-	"os/exec"
-	"path/filepath"
-	"runtime"
 
-	. "github.com/logrusorgru/aurora"
+	au "github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	. "github.com/s4heid/goom/config"
 	"github.com/spf13/cobra"
 )
 
-//go:generate counterfeiter -o ./fakes/open.go . Manager
-type Manager interface {
-	ReadConfig() (Config, error)
-}
-
-func NewOpenCmd(reader Manager) *cobra.Command {
+func NewOpenCmd(configManager ConfigManager, browser Browser) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "open",
-		Short: "Open url in web browser",
-		Long:  "Open url matching a configured alias in the default web browser",
+		Use:     "open",
+		Short:   "Open url in web browser",
+		Long:    "Open url matching a configured alias in the default web browser",
+		Aliases: []string{"o"},
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("invalid number of args specified")
 			}
 
-			config, err := reader.ReadConfig()
+			config, err := configManager.ReadConfig()
 			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
+				return errors.Wrap(err, "reading config")
 			}
 
-			if !contains(config.Rooms, args[0]) {
-				return fmt.Errorf("config does not contain alias %q", args[0])
+			if !containsAlias(config.Rooms, args[0]) {
+				return fmt.Errorf("invalid alias %q", args[0])
 			}
 
 			return nil
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			config, err := reader.ReadConfig()
+			config, err := configManager.ReadConfig()
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println(au.Red(errors.Wrap(err, "reading config")))
 				os.Exit(1)
 			}
 
-			err = Open(config, args...)
+			url, err := createURL(config, args[0])
 			if err != nil {
-				fmt.Println(Red(fmt.Sprintf("cannot open room: %v", err)))
+				fmt.Println(au.Red(errors.Wrap(err, "creating url")))
 				os.Exit(1)
 			}
+
+			err = openURL(url, browser)
+			if err != nil {
+				fmt.Println(au.Red(fmt.Sprintf("cannot open url in browser: %v", err)))
+				os.Exit(1)
+			}
+
+			fmt.Printf("Opening %q in the browser...", au.Green(url))
 		},
 	}
 	return cmd
-}
-
-func Open(config Config, args ...string) error {
-	url, err := createURL(config, args[0])
-	if err != nil {
-		return errors.Wrap(err, "creating url")
-	}
-
-	err = openBrowser(url)
-	if err != nil {
-		return errors.Wrap(err, "opening url in browser")
-	}
-
-	return nil
-}
-
-func contains(rooms []Room, alias string) bool {
-	for _, n := range rooms {
-		if alias == n.Alias {
-			return true
-		}
-	}
-	return false
-}
-
-func openBrowser(url string) error {
-	var err error
-
-	fmt.Printf("Opening %q in the browser...", Green(url))
-	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "windows":
-		err = exec.Command(
-			filepath.Join(
-				os.Getenv("SYSTEMROOT"),
-				"System32", "rundll32.exe"),
-			"url.dll,FileProtocolHandler",
-			url,
-		).Start()
-	case "darwin":
-		err = exec.Command("open", url).Start()
-	default:
-		err = errors.New("unsupported platform")
-	}
-
-	return err
 }
 
 func createURL(config Config, alias string) (string, error) {
@@ -138,7 +91,16 @@ func createURL(config Config, alias string) (string, error) {
 	return u.String(), nil
 }
 
+func containsAlias(rooms []Room, alias string) bool {
+	for _, n := range rooms {
+		if alias == n.Alias {
+			return true
+		}
+	}
+	return false
+}
+
 func init() {
-	openCmd := NewOpenCmd(ConfigReader)
+	openCmd := NewOpenCmd(ConfigReader, DefaultBrowser{})
 	rootCmd.AddCommand(openCmd)
 }

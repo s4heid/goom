@@ -8,7 +8,7 @@ import (
 	"github.com/s4heid/goom/config"
 )
 
-type FakeManager struct {
+type FakeConfigManager struct {
 	ReadConfigStub        func() (config.Config, error)
 	readConfigMutex       sync.RWMutex
 	readConfigArgsForCall []struct {
@@ -25,7 +25,7 @@ type FakeManager struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeManager) ReadConfig() (config.Config, error) {
+func (fake *FakeConfigManager) ReadConfig() (config.Config, error) {
 	fake.readConfigMutex.Lock()
 	ret, specificReturn := fake.readConfigReturnsOnCall[len(fake.readConfigArgsForCall)]
 	fake.readConfigArgsForCall = append(fake.readConfigArgsForCall, struct {
@@ -42,19 +42,19 @@ func (fake *FakeManager) ReadConfig() (config.Config, error) {
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeManager) ReadConfigCallCount() int {
+func (fake *FakeConfigManager) ReadConfigCallCount() int {
 	fake.readConfigMutex.RLock()
 	defer fake.readConfigMutex.RUnlock()
 	return len(fake.readConfigArgsForCall)
 }
 
-func (fake *FakeManager) ReadConfigCalls(stub func() (config.Config, error)) {
+func (fake *FakeConfigManager) ReadConfigCalls(stub func() (config.Config, error)) {
 	fake.readConfigMutex.Lock()
 	defer fake.readConfigMutex.Unlock()
 	fake.ReadConfigStub = stub
 }
 
-func (fake *FakeManager) ReadConfigReturns(result1 config.Config, result2 error) {
+func (fake *FakeConfigManager) ReadConfigReturns(result1 config.Config, result2 error) {
 	fake.readConfigMutex.Lock()
 	defer fake.readConfigMutex.Unlock()
 	fake.ReadConfigStub = nil
@@ -64,7 +64,7 @@ func (fake *FakeManager) ReadConfigReturns(result1 config.Config, result2 error)
 	}{result1, result2}
 }
 
-func (fake *FakeManager) ReadConfigReturnsOnCall(i int, result1 config.Config, result2 error) {
+func (fake *FakeConfigManager) ReadConfigReturnsOnCall(i int, result1 config.Config, result2 error) {
 	fake.readConfigMutex.Lock()
 	defer fake.readConfigMutex.Unlock()
 	fake.ReadConfigStub = nil
@@ -80,7 +80,7 @@ func (fake *FakeManager) ReadConfigReturnsOnCall(i int, result1 config.Config, r
 	}{result1, result2}
 }
 
-func (fake *FakeManager) Invocations() map[string][][]interface{} {
+func (fake *FakeConfigManager) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.readConfigMutex.RLock()
@@ -92,7 +92,7 @@ func (fake *FakeManager) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeManager) recordInvocation(key string, args []interface{}) {
+func (fake *FakeConfigManager) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -104,4 +104,4 @@ func (fake *FakeManager) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ cmd.Manager = new(FakeManager)
+var _ cmd.ConfigManager = new(FakeConfigManager)

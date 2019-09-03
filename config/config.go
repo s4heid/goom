@@ -6,11 +6,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-////go:generate counterfeiter -o ./fakes/config.go . Manager
-//type Manager interface {
-//	ReadConfig() (Config, error)
-//}
-
 type Reader struct {
 	ViperConfig *viper.Viper
 }
@@ -62,8 +57,3 @@ func (r Reader) InitConfig(configPath string) error {
 
 	return nil
 }
-
-// func Run(manager Manager) (Config, error) {
-// 	config, err := manager.ReadConfig()
-// 	return config, err
-// }

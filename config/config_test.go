@@ -39,7 +39,7 @@ var _ = Describe("ReadConfig", func() {
 		Expect(config.Url).To(Equal("https://my-fake-room/{{.Id}}"))
 		Expect(config.Rooms).To(Equal(
 			[]goomconfig.Room{
-				goomconfig.Room{
+				{
 					Alias: "jd",
 					Id:    "1234",
 					Name:  "John Doe",
@@ -69,7 +69,7 @@ rooms:
 			Expect(config.Url).To(Equal("https://my-fake-room/{{.Id}}"))
 			Expect(config.Rooms).To(Equal(
 				[]goomconfig.Room{
-					goomconfig.Room{
+					{
 						Alias: "yd",
 						Id:    "4321",
 						Name:  "Yoshi Doe",

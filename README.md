@@ -1,19 +1,24 @@
-# gozoom
+# goom
 
-Simple golang app that can be used to hop into zoom rooms from the command line.
+A simple golang CLI application for opening url's associated with an alias in
+the web browser.
 
-## Usage
+## Configuration
 
-1. Build the binary in `$GOPATH/bin`:
-    ```sh
-    go install
-    ```
-1. Create a configuration file `~/.gozoom/config.yml`.
+Create a configuration file `~/.goom.yml`. The following properties need to be
+specified:
+
+* `url` - the target url. Templating syntax can be used to build the target url
+  with properties of a room.
+* `rooms` - list of rooms.
+  - `id` - identifier of a room.
+  - `alias` - alias for a room that should be unique.
+  - `name` *(optional)* - descriptive name of a room.
 
 **Example Config**:
 
 ```yaml
-url: https://zoom.us/j/{{.id}}
+url: https://zoom.us/j/{{.Id}}
 rooms:
 - id: 0123456789
   name: Team Standup
@@ -23,15 +28,17 @@ rooms:
   alias: jd
 ```
 
-
-Now, you can use the `gozoom` command and the alias of the room as command line argument to
-jump into the zoom of the corresponding person:
+If you want to open the url that is associated with the room of John Doe, use
+goom's `open` command and pass the alias `jd` as a command line argument:
 
 ```sh
-gozoom open jd
+$ goom open jd
+Opening "https://zoom.us/j/9876543210" in the browser...
 ```
 
+The interpolated url `https://zoom.us/j/9876543210` will be opened in a new
+window of your default web browser.
 
 ## License
 
-[Apache License](LICENSE)
+[Apache License, Version 2.0](LICENSE)
