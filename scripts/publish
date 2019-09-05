@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+set -eu
+
+if [[ "$#" -ne 1 ]]; then
+  >&2 echo "usage: $0 [version]>"
+  exit 1
+fi
+
+readonly app="goom"
+readonly version="$1"
+
+cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
+
+echo -e "-----> [$(date -u)] Running tests...\n"
+./scripts/test
+
+# shellcheck disable=SC2155
+export GPG_TTY=$(tty)
+export CGO_ENABLED=0
+
+git tag -s v"$version" -m "Release $app version $version"
+git push origin v"$version"
+
+echo -e "-----> [$(date -u)] Building binaries...\n"
+
+if [ -z "${OS_LIST:-}" ]; then
+  OS_LIST="darwin linux windows"
+fi
+
+attachments=()
+for os in $OS_LIST ; do
+  asset_name="$app"-"$version"-"$os"-amd64
+  [[ "$os" == "windows" ]] && asset_name=$asset_name.exe
+
+  env GOOS="$os" GOARCH=amd64 go build \
+    -ldflags "-X github.com/s4heid/$app/cmd.version=$version" \
+    -o "$asset_name"
+
+  attachments+=( "--attach=$asset_name" )
+done
+
+releasenotes=$(mktemp /tmp/releasenotes.XXXXXXXXX)
+cat <<EOF > "$releasenotes"
+### Checksums
+
+sha256
+
+\`\`\`sh
+$(sha256sum $app-"$version"-*)
+\`\`\`
+EOF
+
+echo -e "-----> [$(date -u)] Creating release on github.com...\n"
+
+hub release create \
+  "${attachments[@]}" \
+  --file="$releasenotes" \
+  --browse \
+  v"$version"
+
+rm "$app"-"$version"-* "$releasenotes"
