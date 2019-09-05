@@ -16,9 +16,8 @@ var (
 	ConfigReader = Reader{ViperConfig: viper.New()}
 	rootCmd      = &cobra.Command{
 		Use:     "goom",
-		Short:   "A tool for opening urls from the command line based on an alias matching the url.",
-		Long:    "A tool for opening urls from the command line based on an alias matching the url.",
-		Version: "0.0.1",
+		Short:   "A tool for opening urls from the command line.",
+		Version: version,
 	}
 )
 

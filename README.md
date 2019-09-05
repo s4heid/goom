@@ -15,9 +15,13 @@ specified:
   - `alias` - alias for a room that should be unique.
   - `name` *(optional)* - descriptive name of a room.
 
+Currently supported input source formats are [YAML](https://yaml.org) and
+[JSON](https://www.json.org/)
+
 **Example Config**:
 
 ```yaml
+---
 url: https://zoom.us/j/{{.Id}}
 rooms:
 - id: 0123456789
