@@ -1,6 +1,6 @@
 ### Go ###
 # Binaries for programs and plugins
-gozoom
+goom
 *.exe
 *.exe~
 *.dll
@@ -12,3 +12,4 @@ gozoom
 
 # Others
 .envrc
+coverage.out
