@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/s4heid/goom/cmd"
 	fakes "github.com/s4heid/goom/cmd/fakes"
-	. "github.com/s4heid/goom/config"
+	goomconfig "github.com/s4heid/goom/config"
 	"github.com/spf13/cobra"
 )
 
@@ -19,9 +19,9 @@ var _ = Describe("open", func() {
 			command.SilenceErrors = true
 			return command.Execute()
 		}
-		testConfig Config = Config{
+		testConfig = goomconfig.Config{
 			Url: "https://potatoe/{{.Id}}",
-			Rooms: []Room{
+			Rooms: []goomconfig.Room{
 				{
 					Alias: "jd",
 					Id:    "123",
@@ -38,29 +38,24 @@ var _ = Describe("open", func() {
 		fb.OpenURLReturns(nil)
 	})
 
-	It("succeeds when alias is in config", func() {
-		err := execute(NewOpenCmd(fm, fb), []string{"jd"})
+	It("opens the associated url of an alias", func() {
+		ioStreams, _, out, _ := NewTestIOStreams()
+		err := execute(NewOpenCmd(fm, fb, ioStreams), []string{"jd"})
 		Ω(err).ShouldNot(HaveOccurred())
+		Ω(out.String()).Should(Equal("Opening \x1b[32m\"https://potatoe/123\"\x1b[0m in the browser..."))
 		Ω(fb.OpenURLCallCount()).Should(Equal(1))
 	})
 
 	It("errors when alias is not in config", func() {
-		err := execute(NewOpenCmd(fm, fb), []string{"not-jd"})
-		Ω(err).Should(HaveOccurred())
-		Ω(err).Should(MatchError("invalid alias \"not-jd\""))
-		Ω(fb.OpenURLCallCount()).Should(Equal(0))
-	})
-
-	It("errors when no args are given", func() {
-		err := execute(NewOpenCmd(fm, fb), []string{})
-		Ω(err).Should(HaveOccurred())
-		Ω(err).Should(MatchError("invalid number of args specified"))
+		ioStreams, _, _, _ := NewTestIOStreams()
+		err := execute(NewOpenCmd(fm, fb, ioStreams), []string{"not-jd"})
+		Ω(err).Should(MatchError("alias \"not-jd\" does not exist"))
 		Ω(fb.OpenURLCallCount()).Should(Equal(0))
 	})
 
 	It("errors when wrong number of args are given", func() {
-		err := execute(NewOpenCmd(fm, fb), []string{"jd", "another-jd"})
-		Ω(err).Should(HaveOccurred())
+		ioStreams, _, _, _ := NewTestIOStreams()
+		err := execute(NewOpenCmd(fm, fb, ioStreams), []string{"jd", "another-jd"})
 		Ω(err).Should(MatchError("invalid number of args specified"))
 		Ω(fb.OpenURLCallCount()).Should(Equal(0))
 	})

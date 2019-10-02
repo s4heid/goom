@@ -9,6 +9,7 @@ import (
 
 var version string
 
+// NewVersionCmd returns a new cobra version command.
 func NewVersionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",

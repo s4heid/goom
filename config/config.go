@@ -1,11 +1,12 @@
 package config
 
 import (
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
+// Reader wraps an instance of viper
 type Reader struct {
 	ViperConfig *viper.Viper
 }
@@ -21,11 +22,12 @@ type Room struct {
 	Alias string `yaml:"alias" json:"alias"`
 }
 
-func (r Reader) ReadConfig() (Config, error) {
+// ReadConfig reads a config file from viper and returns a Config object.
+func (r *Reader) ReadConfig() (Config, error) {
 	var c Config
 
 	if err := r.ViperConfig.ReadInConfig(); err != nil {
-		return c, errors.Wrap(err, "reading config")
+		return c, errors.Wrap(err, "read config from viper")
 	}
 
 	err := r.ViperConfig.Unmarshal(&c)
@@ -36,7 +38,9 @@ func (r Reader) ReadConfig() (Config, error) {
 	return c, nil
 }
 
-func (r Reader) InitConfig(configPath string) error {
+// SetConfig sets the config from the command line option. If the flag is
+// not set, it defaults to filename .goom in the home directory
+func (r *Reader) SetConfig(configPath string) error {
 	if configPath != "" {
 		r.ViperConfig.SetConfigFile(configPath)
 	} else {
@@ -47,12 +51,6 @@ func (r Reader) InitConfig(configPath string) error {
 
 		r.ViperConfig.AddConfigPath(home)
 		r.ViperConfig.SetConfigName(".goom")
-	}
-
-	r.ViperConfig.AutomaticEnv()
-
-	if err := r.ViperConfig.ReadInConfig(); err != nil {
-		return errors.Wrap(err, "reading config")
 	}
 
 	return nil

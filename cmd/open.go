@@ -5,80 +5,60 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
-	"os"
 
 	au "github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
-	. "github.com/s4heid/goom/config"
+	"github.com/s4heid/goom/config"
 	"github.com/spf13/cobra"
 )
 
-func NewOpenCmd(configManager ConfigManager, browser Browser) *cobra.Command {
+// NewOpenCmd returns a new cobra open command.
+func NewOpenCmd(configManager ConfigManager, browser Browser, ioStreams IOStreams) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "open",
 		Short:   "Open url in web browser",
 		Long:    "Open url matching a configured alias in the default web browser",
 		Aliases: []string{"o"},
-		Args: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("invalid number of args specified")
 			}
 
-			config, err := configManager.ReadConfig()
+			c, err := configManager.ReadConfig()
 			if err != nil {
 				return errors.Wrap(err, "reading config")
 			}
 
-			if !containsAlias(config.Rooms, args[0]) {
-				return fmt.Errorf("invalid alias %q", args[0])
+			room, err := findRoom(c.Rooms, args[0])
+			if err != nil {
+				return fmt.Errorf("alias %q does not exist", args[0])
 			}
 
-			return nil
-		},
-		Run: func(cmd *cobra.Command, args []string) {
-			config, err := configManager.ReadConfig()
+			url, err := createURL(c.Url, room)
 			if err != nil {
-				fmt.Println(au.Red(errors.Wrap(err, "reading config")))
-				os.Exit(1)
-			}
-
-			url, err := createURL(config, args[0])
-			if err != nil {
-				fmt.Println(au.Red(errors.Wrap(err, "creating url")))
-				os.Exit(1)
+				return errors.Wrap(err, "creating url")
 			}
 
 			err = openURL(url, browser)
 			if err != nil {
-				fmt.Println(au.Red(fmt.Sprintf("cannot open url in browser: %v", err)))
-				os.Exit(1)
+				return errors.Wrap(err, "opening url in browser")
 			}
 
-			fmt.Printf("Opening %q in the browser...", au.Green(url))
+			fmt.Fprint(ioStreams.Stdout, fmt.Sprintf("Opening %q in the browser...", au.Green(url)))
+			return nil
 		},
 	}
 	return cmd
 }
 
-func createURL(config Config, alias string) (string, error) {
-	roomIndex := len(config.Rooms)
-	for r, room := range config.Rooms {
-		if room.Alias == alias {
-			roomIndex = r
-			break
-		}
-	}
-	if roomIndex == len(config.Rooms) {
-		return "", errors.New("finding room in config")
-	}
-
-	tmpl, err := template.New("url").Parse(config.Url)
+func createURL(urlTemplate string, room config.Room) (string, error) {
+	tmpl, err := template.New("url").Parse(urlTemplate)
 	if err != nil {
 		return "", errors.Wrap(err, "creating template")
 	}
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, config.Rooms[roomIndex])
+	err = tmpl.Execute(&buf, room)
 	if err != nil {
 		return "", errors.Wrap(err, "executing template")
 	}
@@ -91,16 +71,11 @@ func createURL(config Config, alias string) (string, error) {
 	return u.String(), nil
 }
 
-func containsAlias(rooms []Room, alias string) bool {
-	for _, n := range rooms {
-		if alias == n.Alias {
-			return true
+func findRoom(rooms []config.Room, alias string) (config.Room, error) {
+	for _, r := range rooms {
+		if alias == r.Alias {
+			return r, nil
 		}
 	}
-	return false
-}
-
-func init() {
-	openCmd := NewOpenCmd(ConfigReader, DefaultBrowser{})
-	rootCmd.AddCommand(openCmd)
+	return config.Room{}, errors.New("finding room")
 }

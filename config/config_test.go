@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var subject goomconfig.Reader
+var subject *goomconfig.Reader
 var configContent, configPath, tmpdir string
 
 var _ = BeforeEach(func() {
@@ -32,9 +32,13 @@ var _ = BeforeEach(func() {
 
 var _ = Describe("ReadConfig", func() {
 	It("reads the config in json format", func() {
-		subject = goomconfig.Reader{ViperConfig: viper.New()}
+		subject = &goomconfig.Reader{
+			ViperConfig: viper.New(),
+		}
 		subject.ViperConfig.SetConfigFile(configPath)
+
 		config, err := subject.ReadConfig()
+
 		Expect(err).To(BeNil())
 		Expect(config.Url).To(Equal("https://my-fake-room/{{.Id}}"))
 		Expect(config.Rooms).To(Equal(
@@ -62,10 +66,15 @@ rooms:
 		})
 
 		It("reads the config", func() {
-			subject = goomconfig.Reader{ViperConfig: viper.New()}
+			subject = &goomconfig.Reader{
+				ViperConfig: viper.New(),
+			}
 			subject.ViperConfig.SetConfigFile(configPath)
+
 			config, err := subject.ReadConfig()
+
 			Expect(err).To(BeNil())
+			Expect(subject.ViperConfig.ConfigFileUsed()).To(Equal(configPath))
 			Expect(config.Url).To(Equal("https://my-fake-room/{{.Id}}"))
 			Expect(config.Rooms).To(Equal(
 				[]goomconfig.Room{
@@ -78,17 +87,8 @@ rooms:
 			))
 		})
 	})
-})
 
-var _ = Describe("InitConfig", func() {
-	It("reads the config from a given filepath", func() {
-		subject = goomconfig.Reader{ViperConfig: viper.New()}
-		err := subject.InitConfig(configPath)
-		Expect(subject.ViperConfig.ConfigFileUsed()).To(Equal(configPath))
-		Expect(err).To(BeNil())
-	})
-
-	Context("When configpath is empty string", func() {
+	Context("When config filepath is empty string", func() {
 		var originalHome string
 
 		BeforeEach(func() {
@@ -102,8 +102,13 @@ var _ = Describe("InitConfig", func() {
 		})
 
 		It("reads the config from home directory if configpath is empty string", func() {
-			subject = goomconfig.Reader{ViperConfig: viper.New()}
-			err := subject.InitConfig("")
+			subject = &goomconfig.Reader{
+				ViperConfig: viper.New(),
+			}
+			subject.ViperConfig.SetConfigFile(configPath)
+
+			_, err := subject.ReadConfig()
+
 			Expect(subject.ViperConfig.ConfigFileUsed()).To(Equal(configPath))
 			Expect(err).To(BeNil())
 		})

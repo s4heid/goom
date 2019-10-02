@@ -1,5 +1,5 @@
 NAME=$(shell basename "$(PWD)")
-PKGS:=$(shell go list ./... | grep -v /vendor | grep -v /fakes)
+PACKAGES_DIRS:=$(shell go list -e -f '{{.Dir}}' ./...)
 
 .PHONY: help
 help:
@@ -19,7 +19,7 @@ vet: ## Vet the code
 
 .PHONY: lint
 lint: ## Lint the code
-	golint -set_exit_status $(PKGS)
+	@$(foreach pkg, $(PACKAGES_DIRS), golint -set_exit_status $(pkg);)
 
 .PHONY: build
 build: ## Build the application
@@ -27,7 +27,7 @@ build: ## Build the application
 
 .PHONY: test
 test: ## Run unit tests
-	go test -bench $(PKGS)
+	go test -v -coverprofile=coverage.out $(shell go list ./... | grep -v /fakes)
 	go tool cover -func=coverage.out
 
 .PHONY: test-cov
