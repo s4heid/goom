@@ -1,5 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/s4heid/goom)](https://goreportcard.com/report/s4heid/goom)
-[![Actions Status](https://github.com/s4heid/goom/workflows/.github/workflows/goom.yml/badge.svg)](https://github.com/s4heid/goom/actions)
+[![Actions Status](https://github.com/s4heid/goom/workflows/build%20status/badge.svg)](https://github.com/s4heid/goom/actions)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/s4heid/goom/blob/master/LICENSE)
 
 # goom
