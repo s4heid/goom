@@ -4,8 +4,32 @@
 
 # goom
 
-A simple golang CLI application for opening url's associated with an alias in
-the web browser.
+A simple CLI application for opening url's in the web browser.
+
+## Installation
+
+Download the binary from ttps://github.com/s4heid/goom/releases. Alternatively,
+you can 
+
+### MacOS/Linux
+
+Install goom via Homebrew/Linuxbrew package manager:
+
+```bash
+brew tap s4heid/homebrew-tap https://github.com/s4heid/homebrew-tap.git
+brew install gozoom
+```
+
+### Git
+
+Build it from source:
+
+```sh
+git clone https://github.com/s4heid/goom.git
+cd goom
+make all
+./goom
+```
 
 ## Configuration
 
