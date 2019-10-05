@@ -55,3 +55,14 @@ func (r *Reader) SetConfig(configPath string) error {
 
 	return nil
 }
+
+func FindRoom(rooms []Room, alias string) (Room, error) {
+	var r Room
+	for _, r := range rooms {
+		if alias == r.Alias {
+			return r, nil
+		}
+	}
+
+	return r, errors.New("finding room")
+}

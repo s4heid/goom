@@ -29,7 +29,7 @@ func NewOpenCmd(configManager ConfigManager, browser Browser, ioStreams IOStream
 				return errors.Wrap(err, "reading config")
 			}
 
-			room, err := findRoom(c.Rooms, args[0])
+			room, err := config.FindRoom(c.Rooms, args[0])
 			if err != nil {
 				return fmt.Errorf("alias %q does not exist", args[0])
 			}
@@ -69,13 +69,4 @@ func createURL(urlTemplate string, room config.Room) (string, error) {
 	}
 
 	return u.String(), nil
-}
-
-func findRoom(rooms []config.Room, alias string) (config.Room, error) {
-	for _, r := range rooms {
-		if alias == r.Alias {
-			return r, nil
-		}
-	}
-	return config.Room{}, errors.New("finding room")
 }

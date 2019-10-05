@@ -13,6 +13,7 @@ import (
 
 var (
 	configPath   string
+	outputFormat string
 	configReader *config.Reader
 	rootCmd      = &cobra.Command{
 		Use:     "goom",
@@ -45,6 +46,8 @@ func init() {
 	})
 
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "config file (default is $HOME/.goom.yaml)")
-	openCmd := NewOpenCmd(configReader, DefaultBrowser{}, ioStreams)
-	rootCmd.AddCommand(openCmd)
+	rootCmd.AddCommand(
+		NewOpenCmd(configReader, DefaultBrowser{}, ioStreams),
+		NewShowCmd(configReader, ioStreams),
+	)
 }
