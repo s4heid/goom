@@ -1,19 +1,31 @@
 name: build status
-on: [push]
+
+on: [push, pull_request]
+
 jobs:
   test:
-    name: Test
-    runs-on: ubuntu-18.04
+    name: Test Go ${{ matrix.go }} on ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform }}
+
+    strategy:
+      matrix:
+        go: [ '1.13', '1.12' ]
+        platform: [ubuntu-18.04, macOS-10.14, windows-2019]
+
     steps:
       - name: Set up Go
         uses: actions/setup-go@v1
         with:
-          go-version: 1.12
+          go-version: ${{ matrix.go }}
+
       - name: Check out code
         uses: actions/checkout@v1
+
       - name: Install dependencies
         run: make install
+
       - name: Vet the code
         run: make vet
+
       - name: Run Unit tests
         run: make test
