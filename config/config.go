@@ -56,6 +56,7 @@ func (r *Reader) SetConfig(configPath string) error {
 	return nil
 }
 
+// FindRoom returns the first room whose alias property matches a passed string.
 func FindRoom(rooms []Room, alias string) (Room, error) {
 	var r Room
 	for _, r := range rooms {
@@ -63,6 +64,5 @@ func FindRoom(rooms []Room, alias string) (Room, error) {
 			return r, nil
 		}
 	}
-
 	return r, errors.New("finding room")
 }

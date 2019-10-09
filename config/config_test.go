@@ -39,9 +39,9 @@ var _ = Describe("ReadConfig", func() {
 
 		config, err := subject.ReadConfig()
 
-		Expect(err).To(BeNil())
-		Expect(config.Url).To(Equal("https://my-fake-room/{{.Id}}"))
-		Expect(config.Rooms).To(Equal(
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(config.Url).Should(Equal("https://my-fake-room/{{.Id}}"))
+		Ω(config.Rooms).Should(Equal(
 			[]goomconfig.Room{
 				{
 					Alias: "jd",
@@ -73,10 +73,10 @@ rooms:
 
 			config, err := subject.ReadConfig()
 
-			Expect(err).To(BeNil())
-			Expect(subject.ViperConfig.ConfigFileUsed()).To(Equal(configPath))
-			Expect(config.Url).To(Equal("https://my-fake-room/{{.Id}}"))
-			Expect(config.Rooms).To(Equal(
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(subject.ViperConfig.ConfigFileUsed()).Should(Equal(configPath))
+			Ω(config.Url).Should(Equal("https://my-fake-room/{{.Id}}"))
+			Ω(config.Rooms).Should(Equal(
 				[]goomconfig.Room{
 					{
 						Alias: "yd",
@@ -109,8 +109,21 @@ rooms:
 
 			_, err := subject.ReadConfig()
 
-			Expect(subject.ViperConfig.ConfigFileUsed()).To(Equal(configPath))
-			Expect(err).To(BeNil())
+			Ω(subject.ViperConfig.ConfigFileUsed()).Should(Equal(configPath))
+			Ω(err).Should(BeNil())
 		})
+	})
+})
+
+var _ = Describe("SetConfig", func() {
+	It("sets config file name .goom when filepath is specified", func() {
+		subject = &goomconfig.Reader{
+			ViperConfig: viper.New(),
+		}
+
+		err := subject.SetConfig(configPath)
+
+		Ω(err).ShouldNot(HaveOccurred())
+		Ω(subject.ViperConfig.ConfigFileUsed()).Should(Equal(configPath))
 	})
 })

@@ -42,7 +42,7 @@ var _ = Describe("cmd.NewOpenCmd", func() {
 		ioStreams, _, out, _ := cmd.NewTestIOStreams()
 		err := execute(cmd.NewOpenCmd(fm, fb, ioStreams), []string{"jd"})
 		Ω(err).ShouldNot(HaveOccurred())
-		Ω(out.String()).Should(Equal("Opening \x1b[32m\"https://potatoe/123\"\x1b[0m in the browser..."))
+		Ω(out.String()).Should(Equal("Opening \x1b[32m\"https://potatoe/123\"\x1b[0m (John Doe) in the browser..."))
 		Ω(fb.OpenURLCallCount()).Should(Equal(1))
 	})
 

@@ -13,6 +13,8 @@ import (
 
 // NewShowCmd returns a new cobra show command.
 func NewShowCmd(configManager ConfigManager, ioStreams IOStreams) *cobra.Command {
+	var outputFormat string
+
 	cmd := &cobra.Command{
 		Use:     "show",
 		Short:   "Show information of an url alias",

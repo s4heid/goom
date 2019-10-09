@@ -11,43 +11,44 @@ import (
 	"github.com/spf13/viper"
 )
 
-var (
-	configPath   string
-	outputFormat string
-	configReader *config.Reader
-	rootCmd      = &cobra.Command{
+// NewRootCmd returns a new cobra root command.
+func NewRootCmd(configReader *config.Reader) *cobra.Command {
+	var configPath string
+	cobra.OnInitialize(func() {
+		_ = configReader.SetConfig(configPath)
+	})
+
+	rootCmd := &cobra.Command{
 		Use:     "goom",
 		Short:   "A tool for opening urls from the command line.",
 		Version: version,
 	}
-)
 
-// Execute runs the cobra root command.
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(au.Red(fmt.Sprintf("execute command failed: %v", err)))
-		os.Exit(1)
-	}
-}
-
-func init() {
 	var ioStreams = IOStreams{
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
 	}
 
-	configReader = &config.Reader{
-		ViperConfig: viper.New(),
-	}
-
-	cobra.OnInitialize(func() {
-		_ = configReader.SetConfig(configPath)
-	})
-
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "config file (default is $HOME/.goom.yaml)")
 	rootCmd.AddCommand(
 		NewOpenCmd(configReader, DefaultBrowser{}, ioStreams),
 		NewShowCmd(configReader, ioStreams),
+		NewVersionCmd(),
 	)
+
+	return rootCmd
+}
+
+// Execute runs the cobra root command.
+func Execute() {
+	configReader := &config.Reader{
+		ViperConfig: viper.New(),
+	}
+
+	rootCmd := NewRootCmd(configReader)
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(au.Red(fmt.Sprintf("execute command failed: %v", err)))
+		os.Exit(1)
+	}
 }

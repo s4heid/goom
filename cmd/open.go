@@ -44,7 +44,7 @@ func NewOpenCmd(configManager ConfigManager, browser Browser, ioStreams IOStream
 				return errors.Wrap(err, "opening url in browser")
 			}
 
-			fmt.Fprint(ioStreams.Stdout, fmt.Sprintf("Opening %q in the browser...", au.Green(url)))
+			fmt.Fprint(ioStreams.Stdout, fmt.Sprintf("Opening %q (%s) in the browser...", au.Green(url), room.Name))
 			return nil
 		},
 	}
